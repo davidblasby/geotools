@@ -37,6 +37,7 @@ import org.geotools.test.TestData;
 import org.geotools.util.factory.GeoTools;
 import org.junit.Before;
 import org.junit.Test;
+import org.locationtech.jts.geom.Envelope;
 import org.opengis.filter.FilterFactory2;
 
 /** @author ImranR */
@@ -46,6 +47,7 @@ public class MarkAlongLineTest {
 
     SimpleFeatureSource lineFS;
     SimpleFeatureSource polygonFS;
+    SimpleFeatureSource redundantPointsLine;
 
     Style squareWaveMarkerStyle;
 
@@ -59,6 +61,9 @@ public class MarkAlongLineTest {
         PropertyDataStore ds = new PropertyDataStore(property.getParentFile());
         lineFS = ds.getFeatureSource("markAlongLine");
         assertNotNull(lineFS);
+
+        redundantPointsLine= ds.getFeatureSource("markAlongLineRedudantPointsLine");
+        assertNotNull(redundantPointsLine);
 
         polygonFS = ds.getFeatureSource("markAlongLinePolygon");
         assertNotNull(polygonFS);
@@ -124,6 +129,38 @@ public class MarkAlongLineTest {
     }
 
     @Test
+    public void testRedundantPointsInLine() throws Exception {
+
+        FeatureLayer lineLayer = new FeatureLayer(redundantPointsLine, squareWaveMarkerStyle);
+
+        SimpleFeatureCollection fc =
+                lineLayer
+                        .getSimpleFeatureSource()
+                        .getFeatures(
+                                ff.equal(ff.property("name"), ff.literal("right_angle"), true));
+        assertTrue(fc.size() > 0);
+        ReferencedEnvelope env = fc.getBounds();
+        env.expandToInclude(new Envelope(-1, 11,-1,11));
+        //env.expandBy(0.025);
+        MapContent mc = new MapContent();
+        mc.addLayer(lineLayer);
+        StreamingRenderer renderer = new StreamingRenderer();
+        renderer.setMapContent(mc);
+        renderer.setJava2DHints(new RenderingHints(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON));
+
+        BufferedImage image =
+                RendererBaseTest.showRender("WKT drapped along line", renderer, TIME, env);
+
+        // ImageIO.write(image, "png", new File("D:\\markAlongLine_sqaure_right_angle.png"));
+
+        File squareLineAllAngles =
+                new File(
+                        TestData.getResource(this, "markAlongLine_sqaure_right_angle.png").toURI());
+        ImageAssert.assertEquals(squareLineAllAngles, image, 00);
+    }
+
+
+    @Test
     public void testRightAngledSquareWaves() throws Exception {
 
         FeatureLayer lineLayer = new FeatureLayer(lineFS, squareWaveMarkerStyle);
@@ -150,7 +187,7 @@ public class MarkAlongLineTest {
         File squareLineAllAngles =
                 new File(
                         TestData.getResource(this, "markAlongLine_sqaure_right_angle.png").toURI());
-        ImageAssert.assertEquals(squareLineAllAngles, image, 200);
+        ImageAssert.assertEquals(squareLineAllAngles, image, 00);
     }
 
     @Test

@@ -307,6 +307,8 @@
     </profile>
     
     <!-- for those using JDK 11 -->
+
+    <!--
     <profile>
       <id>errorprone</id>
       <activation>
@@ -342,8 +344,9 @@
         </plugins>
       </build>
     </profile>
-    
+    -->
     <!-- using github.com/google/error-prone-javac is required when running on JDK 8 -->
+    <!--
     <profile>
       <id>errorprone8</id>
       <activation>
@@ -381,7 +384,7 @@
         </plugins>
       </build>
     </profile>
-
+-->
     <profile>
       <id>spotbugs</id>
       <activation>
